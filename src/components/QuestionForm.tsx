@@ -112,7 +112,7 @@ export function QuestionForm({ onSubmit, isVirtuosoUser, showViewQuestionsLink, 
             <h2 className="font-medium" style={{ fontFamily: 'sofia-pro, sans-serif', color: '#192B55', marginBottom: '0.234375vw', fontSize: '3.275vw', flexShrink: 0 }}>Recently submitted questions</h2>
             <div className="relative overflow-hidden h-full" style={{ flex: 1, minHeight: 0 }}>
               <div className="overflow-y-auto h-full" style={{ display: 'flex', flexDirection: 'column', gap: '3.125vw', paddingBottom: '1.5625vw', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                {submissions.slice(-10).reverse().map((submission) => (
+                {submissions.map((submission) => (
                   <div
                     key={submission.id}
                     style={{ color: '#314468', fontSize: '2.6203125vw' }}
