@@ -70,7 +70,7 @@ export function QuestionForm({ onSubmit, isVirtuosoUser, showViewQuestionsLink, 
           </div>
         )}
 
-        <div className="text-center" style={{ marginTop: '4.63vw', marginBottom: '6.9425vw' }}>
+        <div className="text-center" style={{ marginTop: '4.63vw', marginBottom: 'calc(6.9425vw + 40px)' }}>
           <div className="flex items-center justify-center">
             <h1 className="font-bold tracking-tight" style={{ marginBottom: '0.390625vw', fontSize: '5.458125vw', lineHeight: '1.1' }}>What would you ask the Virtuoso intelligence capability?</h1>
           </div>
