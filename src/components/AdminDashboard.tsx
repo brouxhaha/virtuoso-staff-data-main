@@ -17,13 +17,13 @@ interface AdminDashboardProps {
   userLogin: string
   showViewQuestionsLink: boolean
   setShowViewQuestionsLink: (value: boolean) => void
-  onDeleteQuestion?: (id: string) => void
-  onToggleFavorite?: (id: string) => void
+  onDeleteQuestion?: (id: number) => void
+  onToggleFavorite?: (id: number) => void
 }
 
 export function AdminDashboard({ submissions, userLogin, showViewQuestionsLink, setShowViewQuestionsLink, onDeleteQuestion, onToggleFavorite }: AdminDashboardProps) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [hoveredRow, setHoveredRow] = useState<string | null>(null)
+  const [hoveredRow, setHoveredRow] = useState<number | null>(null)
 
   const filteredSubmissions = useMemo(() => {
     if (!searchQuery.trim()) return submissions
@@ -48,14 +48,14 @@ export function AdminDashboard({ submissions, userLogin, showViewQuestionsLink, 
     }
   }
 
-  const handleDelete = (id: string, question: string) => {
+  const handleDelete = (id: number, question: string) => {
     if (onDeleteQuestion) {
       onDeleteQuestion(id)
       toast.success("Question deleted")
     }
   }
 
-  const handleToggleFavorite = (id: string, currentStatus: boolean) => {
+  const handleToggleFavorite = (id: number, currentStatus: boolean) => {
     if (onToggleFavorite) {
       onToggleFavorite(id)
       toast.success(currentStatus ? "Removed from favorites" : "Added to favorites")
@@ -137,7 +137,7 @@ export function AdminDashboard({ submissions, userLogin, showViewQuestionsLink, 
               <Table className="table-fixed w-full">
                 <TableBody>
                   {filteredSubmissions.map((submission) => {
-                    const date = new Date(submission.timestamp)
+                    const date = new Date(submission.created_at)
                     const isHovered = hoveredRow === submission.id
                     return (
                       <TableRow 
@@ -179,7 +179,7 @@ export function AdminDashboard({ submissions, userLogin, showViewQuestionsLink, 
                               }}
                             >
                               <button
-                                onClick={() => handleToggleFavorite(submission.id, submission.isFavorite || false)}
+                                onClick={() => handleToggleFavorite(submission.id, submission.favorite || false)}
                                 className="rounded-md border transition-all duration-200 hover:bg-[#001141] [&:hover>*]:text-white z-10 cursor-pointer"
                                 style={{
                                   borderColor: '#001141',
@@ -187,9 +187,9 @@ export function AdminDashboard({ submissions, userLogin, showViewQuestionsLink, 
                                   padding: '0.35vw',
                                   borderRadius: '4px'
                                 }}
-                                aria-label={submission.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                                aria-label={submission.favorite ? "Remove from favorites" : "Add to favorites"}
                               >
-                                <Star className="transition-colors duration-200" style={{ width: '1.25vw', height: '1.25vw' }} weight={submission.isFavorite ? "fill" : "regular"} />
+                                <Star className="transition-colors duration-200" style={{ width: '1.25vw', height: '1.25vw' }} weight={submission.favorite ? "fill" : "regular"} />
                               </button>
                               <button
                                 onClick={() => handleDelete(submission.id, submission.question)}

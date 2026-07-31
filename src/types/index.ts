@@ -1,6 +1,6 @@
 export interface QuestionSubmission {
-  id: string
+  id: number
   question: string
-  timestamp: number
-  isFavorite?: boolean
+  created_at: string
+  favorite: boolean
 }

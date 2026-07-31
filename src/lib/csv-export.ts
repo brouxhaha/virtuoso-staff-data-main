@@ -4,7 +4,7 @@ export function exportToCSV(submissions: QuestionSubmission[]) {
   const headers = ["ID", "Question", "Date", "Time"]
   
   const rows = submissions.map(sub => {
-    const date = new Date(sub.timestamp)
+    const date = new Date(sub.created_at)
     return [
       sub.id,
       `"${sub.question.replace(/"/g, '""')}"`,

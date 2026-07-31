@@ -8,7 +8,7 @@ import { toast } from "sonner"
 import { QuestionSubmission } from "@/types"
 
 interface QuestionFormProps {
-  onSubmit: (question: Omit<QuestionSubmission, "id" | "timestamp">) => void
+  onSubmit: (question: string) => Promise<void>
   isVirtuosoUser: boolean
   showViewQuestionsLink: boolean
   submissions: QuestionSubmission[]
@@ -39,7 +39,7 @@ export function QuestionForm({ onSubmit, isVirtuosoUser, showViewQuestionsLink, 
     setIsSubmitting(true)
 
     try {
-      onSubmit({ question: question.trim() })
+      await onSubmit(question.trim())
       toast.success("Thank you for your question!")
       setQuestion("")
       textareaRef.current?.focus()
@@ -47,6 +47,13 @@ export function QuestionForm({ onSubmit, isVirtuosoUser, showViewQuestionsLink, 
       toast.error("Failed to submit question. Please try again.")
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmit(e as unknown as React.FormEvent)
     }
   }
 
@@ -80,9 +87,10 @@ export function QuestionForm({ onSubmit, isVirtuosoUser, showViewQuestionsLink, 
               id="question"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="What would you like to know?"
               className="border-2 resize-none overflow-y-auto flex items-center"
-              style={{ backgroundColor: 'white', paddingLeft: '3.75vw', paddingRight: '6.875vw', fontSize: '2.946875vw', lineHeight: '1.2', paddingTop: '0.78125vw', paddingBottom: '0.78125vw', minHeight: '5.78125vw', maxHeight: 'calc(2.946875vw * 1.2 * 4 + 0.78125vw * 2)' }}
+              style={{ backgroundColor: 'white', paddingLeft: '1.875vw', paddingRight: '6.875vw', fontSize: '2.946875vw', lineHeight: '1.2', paddingTop: '0.78125vw', paddingBottom: '0.78125vw', minHeight: '5.78125vw', maxHeight: 'calc(2.946875vw * 1.2 * 4 + 0.78125vw * 2)' }}
               disabled={isSubmitting}
               autoFocus
               rows={1}
@@ -91,8 +99,8 @@ export function QuestionForm({ onSubmit, isVirtuosoUser, showViewQuestionsLink, 
               type="submit"
               disabled={isSubmitting || !question.trim()}
               size="icon"
-              className="absolute rounded-lg bg-muted-foreground hover:bg-foreground disabled:bg-muted disabled:opacity-50 cursor-pointer"
-              style={{ right: '1.25vw', height: '4.21875vw', width: '4.21875vw', bottom: '0.78125vw' }}
+              className="absolute rounded-lg hover:bg-foreground disabled:bg-muted disabled:opacity-50 cursor-pointer"
+              style={{ right: '1.25vw', height: '4.21875vw', width: '4.21875vw', bottom: '0.78125vw', backgroundColor: '#001141' }}
             >
               <ArrowUp className="text-background" weight="bold" style={{ width: '2.109375vw', height: '2.109375vw' }} />
             </Button>

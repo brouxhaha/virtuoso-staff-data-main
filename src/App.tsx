@@ -1,65 +1,44 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
-import { useKV } from "@github/spark/hooks"
 import { QuestionForm } from "@/components/QuestionForm"
 import { AdminDashboard } from "@/components/AdminDashboard"
 import { Toaster } from "@/components/ui/sonner"
 import { QuestionSubmission } from "@/types"
 import { useEffect, useState } from "react"
+import {
+  fetchRecentQuestions,
+  insertQuestion,
+  deleteQuestion,
+  toggleFavorite,
+} from "@/lib/supabase"
 
 function App() {
-  const [submissions, setSubmissions] = useKV<QuestionSubmission[]>("virtuoso-questions", [])
-  const [showViewQuestionsLink, setShowViewQuestionsLink] = useKV<boolean>("show-view-questions-link", false)
-  const [isVirtuosoUser, setIsVirtuosoUser] = useState(false)
-  const [userLogin, setUserLogin] = useState<string>("")
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  const [submissions, setSubmissions] = useState<QuestionSubmission[]>([])
+  const [showViewQuestionsLink, setShowViewQuestionsLink] = useState(false)
+  const isVirtuosoUser = false
+  const userLogin = ""
 
   useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const user = await window.spark.user()
-        if (user && user.login.toLowerCase().includes("virtuoso")) {
-          setIsVirtuosoUser(true)
-          setUserLogin(user.login)
-        }
-      } catch (error) {
-        console.error("Failed to check user authentication")
-      } finally {
-        setIsCheckingAuth(false)
-      }
-    }
-
-    checkUser()
+    fetchRecentQuestions()
+      .then(setSubmissions)
+      .catch(() => console.error("Failed to load questions"))
   }, [])
 
-  const handleQuestionSubmit = (question: Omit<QuestionSubmission, "id" | "timestamp">) => {
-    const newSubmission: QuestionSubmission = {
-      id: crypto.randomUUID(),
-      ...question,
-      timestamp: Date.now()
-    }
-
-    setSubmissions((current) => [...(current || []), newSubmission])
+  const handleQuestionSubmit = async (question: string) => {
+    const newSubmission = await insertQuestion(question)
+    setSubmissions((current) => [newSubmission, ...current].slice(0, 10))
   }
 
-  const handleDeleteQuestion = (id: string) => {
-    setSubmissions((current) => (current || []).filter(sub => sub.id !== id))
+  const handleDeleteQuestion = async (id: number) => {
+    await deleteQuestion(id)
+    setSubmissions((current) => current.filter((sub) => sub.id !== id))
   }
 
-  const handleToggleFavorite = (id: string) => {
+  const handleToggleFavorite = async (id: number) => {
+    const sub = submissions.find((s) => s.id === id)
+    if (!sub) return
+    await toggleFavorite(id, sub.favorite)
     setSubmissions((current) =>
-      (current || []).map(sub =>
-        sub.id === id ? { ...sub, isFavorite: !sub.isFavorite } : sub
-      )
-    )
-  }
-
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="text-muted-foreground" style={{ fontSize: '54px' }}>Loading...</div>
-        </div>
-      </div>
+      current.map((s) => (s.id === id ? { ...s, favorite: !s.favorite } : s))
     )
   }
 
@@ -78,8 +57,8 @@ function App() {
               <QuestionForm 
                 onSubmit={handleQuestionSubmit}
                 isVirtuosoUser={isVirtuosoUser}
-                showViewQuestionsLink={showViewQuestionsLink ?? false}
-                submissions={submissions || []}
+                showViewQuestionsLink={showViewQuestionsLink}
+                submissions={submissions}
               />
             }
           />
@@ -88,9 +67,9 @@ function App() {
             element={
               isVirtuosoUser ? (
                 <AdminDashboard
-                  submissions={submissions || []}
+                  submissions={submissions}
                   userLogin={userLogin}
-                  showViewQuestionsLink={showViewQuestionsLink ?? false}
+                  showViewQuestionsLink={showViewQuestionsLink}
                   setShowViewQuestionsLink={setShowViewQuestionsLink}
                   onDeleteQuestion={handleDeleteQuestion}
                   onToggleFavorite={handleToggleFavorite}
